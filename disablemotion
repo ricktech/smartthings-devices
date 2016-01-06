@@ -1,0 +1,52 @@
+ /**
+     *  Disable Motion Off
+     *
+     *  Copyright 2014 Bruce Ravenel
+     *
+     */
+    definition(
+        name: "Disable Motion Off",
+        namespace: "bravenel",
+        author: "Bruce Ravenel",
+        description: "Use a stand-in to prevent motion off",
+        category: "My Apps",
+        iconUrl: "https://s3.amazonaws.com/smartapp-icons/Convenience/Cat-Convenience.png",
+        iconX2Url: "https://s3.amazonaws.com/smartapp-icons/Convenience/Cat-Convenience@2x.png")
+    
+    
+    preferences {
+    	section("Real Dimmer...") { 
+            input "realswitch", "capability.switch", 
+    	    title: "Real Switch...", 
+    	    required: true
+    	}
+        section("Virtual Stand-in...") {
+            input "standin", "capability.switch",
+            title: "Stand-in Virtual Switch...",
+            required: true
+        }
+    }
+    
+    def installed() {
+        initialize()
+    }
+    
+    def updated() {
+    	unsubscribe()
+        initialize()
+    }
+
+    def initialize() {
+    	subscribe(standin, "switch.on", switchOnHandler)
+        subscribe(standin, "switch.off", switchOffHandler)
+        state.motionEnabled = true
+    }
+    
+    def switchOnHandler(evt) {
+    	state.motionEnabled = realswitch.currentSwitch == "off"
+        if(state.motionEnabled) realswitch.on()
+    }
+    
+    def switchOffHandler(evt) {
+        if(state.motionEnabled) realswitch.off()
+    }
